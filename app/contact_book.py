@@ -1,61 +1,48 @@
-from typing import List
-
 from app.contact import Contact
 from app.storage import Storage
 
-
 class ContactBook:
-
     def __init__(self):
+        self.contacts = []
         self.storage = Storage()
-    
-    def add_contact(self, contact: Contact):
-        contact_dict = contact.to_dict()
-        self.storage.add_contact(contact_dict)
+        self.load_contacts()
 
-    def get_contacts(self) -> List[Contact]:
-        contacts = []
-        for contact in self.storage.get_contacts():
-            contacts.append(Contact(
-                id=contact['id'],
-                name=contact['name'],
-                phone=contact['phone'],
-                email=contact['email'],
-            ))
+    def add_contact(self, name, phone, email):
+        contact = Contact(name, phone, email)
+        self.contacts.append(contact)
+        self.save_contacts()
 
-        return contacts
+    def show_all(self):
+        for c in self.contacts:
+            print(c.display())
 
-    def get_conatct_by_name(self, search: str) -> List[Contact]:
-        contacts = []
-        for contact in self.storage.get_contacts():
-            if search.lower() in contact['name'].lower():
-                contacts.append(Contact(
-                    id=contact['id'],
-                    name=contact['name'],
-                    phone=contact['phone'],
-                    email=contact['email'],
-                ))
+    def search_contact(self, name):
+        for c in self.contacts:
+            if c.name.lower() == name.lower():
+                print(c.display())
+                return
+        print("Contact not found")
 
-        return contacts
+    def delete_contact(self, name):
+        for c in self.contacts:
+            if c.name.lower() == name.lower():
+                self.contacts.remove(c)
+                self.save_contacts()
+                return
+        print("Contact not found")
 
-    def update_contact(self, contact: Contact) -> Contact:
-        contacts = self.storage.get_contacts()
-        for i, item in enumerate(contacts):
-            if item['id'] == contact.id:
-                contacts[i] = contact.to_dict()
+    def update_contact(self, name, phone=None, email=None):
+        for c in self.contacts:
+            if c.name.lower() == name.lower():
+                c.update(phone, email)
+                self.save_contacts()
+                return
+        print("Contact not found")
 
-        self.storage.save_contacts(contacts)
+    def save_contacts(self):
+        data = [{"name": c.name, "phone": c.phone, "email": c.email} for c in self.contacts]
+        self.storage.save(data)
 
-    def delete_contact(self, id: str) -> None:
-        pass
-
-    def get_contact(self, id: str) -> None | Contact:
-        for contact in self.storage.get_contacts():
-            if contact['id'] == id:
-                return Contact(
-                    id=contact['id'],
-                    name=contact['name'],
-                    phone=contact['phone'],
-                    email=contact['email'],
-                )
-            
+    def load_contacts(self):
+        data = self.storage.load()
+        self.contacts = [Contact(d["name"], d["phone"], d["email"]) for d in data]

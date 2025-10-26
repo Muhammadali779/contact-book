@@ -1,19 +1,14 @@
-from uuid import uuid1, UUID
-from typing import Optional
-
-
 class Contact:
-
-    def __init__(self, name: str, phone: str, email: str, id: Optional[UUID] = None) -> None:
-        self.id = id or uuid1()
+    def __init__(self, name, phone, email):
         self.name = name
         self.phone = phone
         self.email = email
 
-    def to_dict(self) -> dict:
-        return {
-            "id": str(self.id),
-            "name": self.name,
-            "phone": self.phone,
-            "email": self.email
-        }
+    def update(self, phone=None, email=None):
+        if phone:
+            self.phone = phone
+        if email:
+            self.email = email
+
+    def display(self):
+        return f"{self.name} | {self.phone} | {self.email}"
